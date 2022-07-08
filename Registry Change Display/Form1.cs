@@ -19,43 +19,43 @@ namespace Registry_Change_Display
                 run_PowerShell_Command(builder.ToString());
          
                 string command2 = string.Format(@"dir -rec -erroraction ignore HKCU:\ | % name > {0}\Base - HKCU.txt", path);
-                StringBuilder builder = new StringBuilder();
+                StringBuilder builder2 = new StringBuilder();
                 builder.Append(command2);
-                run_PowerShell_Command(builder.ToString());            
+                run_PowerShell_Command(builder2.ToString());            
         }
 
         private void List_Changes_Click(object sender, EventArgs e)
         {
             string path = Path.GetDirectoryName(Application.ExecutablePath);
 
-            StringBuilder builder = new StringBuilder();
-           
+                StringBuilder Init_HKCU_stringbuilder = new StringBuilder();           
                 string current_registry_HKCU_command = string.Format(
                     $@"dir -rec -erroraction ignore HKCU:\ | % name > {0}/Current-HKCU-{1}).txt", path, DateTime.Now.ToShortDateString());
-                builder.Clear();
-                builder.Append(current_registry_HKCU_command);
-                run_PowerShell_Command(builder.ToString());
+                    Init_HKCU_stringbuilder.Clear();
+                    Init_HKCU_stringbuilder.Append(current_registry_HKCU_command);
+                run_PowerShell_Command(Init_HKCU_stringbuilder.ToString());
 
-                string current_registry_HKLM_command = string.Format(
+                StringBuilder Init_HKLM_stringbuilder = new StringBuilder();
+            string current_registry_HKLM_command = string.Format(
                     $@"dir -rec -erroraction ignore HKLM:\ | % name > {0}/Current-HKLM-{1}).txt", path, DateTime.Now.ToShortDateString());
-                builder.Clear();
-                builder.Append(current_registry_HKLM_command);
-                run_PowerShell_Command(builder.ToString());
-          
-                string compare_HKCU_registry_changes_command = string.Format(
+                    Init_HKLM_stringbuilder.Clear();
+                    Init_HKLM_stringbuilder.Append(current_registry_HKLM_command);
+                run_PowerShell_Command(Init_HKLM_stringbuilder.ToString());
+
+                 StringBuilder Compare_HKCU_stringbuilder = new StringBuilder();
+            string compare_HKCU_registry_changes_command = string.Format(
                     $@"Compare-Object (Get-Content -Path .\Base-HKCU.txt)(Get-Content-Path .\{0}/Current-HKCU-{1}).txt)", path, DateTime.Now.ToShortDateString());
-                builder.Clear();
-                builder.Append(compare_HKCU_registry_changes_command);
-                run_PowerShell_Command(builder.ToString());
+                    Compare_HKCU_stringbuilder.Clear();
+                    Compare_HKCU_stringbuilder.Append(compare_HKCU_registry_changes_command);
+                run_PowerShell_Command(Compare_HKCU_stringbuilder.ToString());
 
-                string compare_HKLM_registry_changes_command = string.Format(
+                StringBuilder Compare_HKLM_stringbuilder = new StringBuilder();
+            string compare_HKLM_registry_changes_command = string.Format(
                     $@"Compare-Object (Get-Content -Path .\Base-HKLM.txt)(Get-Content-Path .\{0}/Current-HKLM-{1}).txt)", path, DateTime.Now.ToShortDateString());
-                builder.Clear();
-                builder.Append(compare_HKLM_registry_changes_command);
-                run_PowerShell_Command(builder.ToString());
+                    Compare_HKLM_stringbuilder.Clear();
+                    Compare_HKLM_stringbuilder.Append(compare_HKLM_registry_changes_command);
+                run_PowerShell_Command(Compare_HKLM_stringbuilder.ToString());
         }
-
-        StreamReader standardOutput;
         public void run_PowerShell_Command(string command)
         {
             var process = new Process();
