@@ -58,7 +58,7 @@ namespace Registry_Change_Display
 
                 StringBuilder Compare_HKCU_stringbuilder = new StringBuilder();
                 string compare_HKCU_registry_changes_command = string.Format(
-                        @"Compare-Object (Get-Content -Path \Base-HKCU.txt)(Get-Content-Path {0}", HKCU_Current_FilePath);
+                        @"Compare-Object (Get-Content -Path {0}\Base-HKCU.txt)(Get-Content-Path {1}", path, HKCU_Current_FilePath);
                 Compare_HKCU_stringbuilder.Clear();
                 Compare_HKCU_stringbuilder.Append(compare_HKCU_registry_changes_command);
                 run_PowerShell_Command(Compare_HKCU_stringbuilder.ToString());
@@ -78,7 +78,7 @@ namespace Registry_Change_Display
 
                 StringBuilder Compare_HKLM_stringbuilder = new StringBuilder();
                 string compare_HKLM_registry_changes_command = string.Format(
-                        @"Compare-Object (Get-Content -Path .\Base-HKLM.txt)(Get-Content-Path {0})", HKLM_Current_FilePath);
+                        @"Compare-Object (Get-Content -Path {0}\Base-HKLM.txt)(Get-Content-Path {1})", path, HKLM_Current_FilePath);
                 Compare_HKLM_stringbuilder.Clear();
                 Compare_HKLM_stringbuilder.Append(compare_HKLM_registry_changes_command);
                 run_PowerShell_Command(Compare_HKLM_stringbuilder.ToString());
