@@ -18,7 +18,7 @@ namespace Registry_Change_Display
             //create the files and then pipe to them the data for the base snapshot.
             //I figure the file should be open to read/write data to/from it.
 
-            string HKCU_Init_FilePath = string.Format(@"{0}\\..\Base-HKCU.txt", path);
+            string HKCU_Init_FilePath = string.Format(@"{0}\Base-HKCU.txt", path);
                                                 //OpenOrCreate, ReadWrite
             using (File.Open(HKCU_Init_FilePath, (FileMode)4, FileAccess.ReadWrite))
             {
@@ -29,7 +29,7 @@ namespace Registry_Change_Display
             };
 
 
-            string HKLM_Init_FilePath = string.Format(@"{0}\\..\Base-HKLM.txt", path);
+            string HKLM_Init_FilePath = string.Format(@"{0}\Base-HKLM.txt", path);
                                                 //OpenOrCreate, ReadWrite
             using (File.Open(HKLM_Init_FilePath, (FileMode)4, FileAccess.ReadWrite))
             {
@@ -44,28 +44,28 @@ namespace Registry_Change_Display
         private void List_Changes_Click(object sender, EventArgs e)
         {
            
-            string HKCU_Current_FilePath = string.Format(@"{0}\\..\Current-HKCU-{1}.txt", path, date);
+            string HKCU_Current_FilePath = string.Format(@"{0}\Current-HKCU-{1}.txt", path, date);
 
                                                   //OpenOrCreate, ReadWrite
             using (File.Open(HKCU_Current_FilePath, (FileMode)4, FileAccess.ReadWrite))
             {
                 StringBuilder Current_HKCU_stringbuilder = new StringBuilder();
                 string current_registry_HKCU_command = string.Format(
-                    $@"dir -rec -erroraction ignore HKCU:\ | % name > {0}", HKCU_Current_FilePath);
+                    @"dir -rec -erroraction ignore HKCU:\ | % name > {0}", HKCU_Current_FilePath);
                 Current_HKCU_stringbuilder.Clear();
                 Current_HKCU_stringbuilder.Append(current_registry_HKCU_command);
                 run_PowerShell_Command(Current_HKCU_stringbuilder.ToString());
 
                 StringBuilder Compare_HKCU_stringbuilder = new StringBuilder();
                 string compare_HKCU_registry_changes_command = string.Format(
-                        @"Compare-Object (Get-Content -Path \\..\Base-HKCU.txt)(Get-Content-Path {0}", HKCU_Current_FilePath);
+                        @"Compare-Object (Get-Content -Path \Base-HKCU.txt)(Get-Content-Path {0}", HKCU_Current_FilePath);
                 Compare_HKCU_stringbuilder.Clear();
                 Compare_HKCU_stringbuilder.Append(compare_HKCU_registry_changes_command);
                 run_PowerShell_Command(Compare_HKCU_stringbuilder.ToString());
             };
 
 
-            string HKLM_Current_FilePath = string.Format(@"{0}\\..\Current-HKLM-{1}.txt", path, date);
+            string HKLM_Current_FilePath = string.Format(@"{0}\Current-HKLM-{1}.txt", path, date);
                                                     //OpenOrCreate, ReadWrite
             using (File.Open(HKLM_Current_FilePath,(FileMode)4, FileAccess.ReadWrite))
             {
@@ -78,7 +78,7 @@ namespace Registry_Change_Display
 
                 StringBuilder Compare_HKLM_stringbuilder = new StringBuilder();
                 string compare_HKLM_registry_changes_command = string.Format(
-                        @"Compare-Object (Get-Content -Path .\\..\Base-HKLM.txt)(Get-Content-Path {0})", HKLM_Current_FilePath);
+                        @"Compare-Object (Get-Content -Path .\Base-HKLM.txt)(Get-Content-Path {0})", HKLM_Current_FilePath);
                 Compare_HKLM_stringbuilder.Clear();
                 Compare_HKLM_stringbuilder.Append(compare_HKLM_registry_changes_command);
                 run_PowerShell_Command(Compare_HKLM_stringbuilder.ToString());
