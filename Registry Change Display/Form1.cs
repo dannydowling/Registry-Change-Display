@@ -18,10 +18,12 @@ namespace Registry_Change_Display
         {
             process = new Process();
             process.StartInfo.UseShellExecute = false;
-            process.StartInfo.CreateNoWindow = false;
+            process.StartInfo.CreateNoWindow = true;
+
             process.StartInfo.RedirectStandardInput = true;
             process.StartInfo.RedirectStandardOutput = true;
             process.StartInfo.RedirectStandardError = true;
+
             process.StartInfo.FileName = "PowerShell.exe";
             process.OutputDataReceived += (sender, args) => Display(sender, args.Data);
             process.ErrorDataReceived += (sender, args) => Display(sender, args.Data);
@@ -31,21 +33,26 @@ namespace Registry_Change_Display
 
             try
             {
+                process.StartInfo.Arguments = null;
                 string HKCU_Init_FilePath = string.Format(@"{0}\Base-HKCU.txt", path);
                 //OpenOrCreate, ReadWrite
                 using (File.Open(HKCU_Init_FilePath, (FileMode)4, FileAccess.ReadWrite))
                 {
                     string HKCU_Init_Command = string.Format(@"dir -rec -erroraction ignore HKCU:\ | % name > {0}", HKCU_Init_FilePath).ToString();
                     process.StartInfo.Arguments += HKCU_Init_Command;
+                    process.Start();
+                    process.Close();
                 };
 
-
+                process.StartInfo.Arguments = null;
                 string HKLM_Init_FilePath = string.Format(@"{0}\Base-HKLM.txt", path);
                 //OpenOrCreate, ReadWrite
                 using (File.Open(HKLM_Init_FilePath, (FileMode)4, FileAccess.ReadWrite))
                 {
                     string HKLM_Init_Command = string.Format(@"dir -rec -erroraction ignore HKLM:\ | % name > {0}", HKLM_Init_FilePath).ToString();
                     process.StartInfo.Arguments += HKLM_Init_Command;
+                    process.Start();
+                    process.Close();
                 };
             }
             catch (Exception)
@@ -54,7 +61,6 @@ namespace Registry_Change_Display
                 process.Dispose();
                 throw;
             }
-
         }
 
 
@@ -62,12 +68,14 @@ namespace Registry_Change_Display
         {
             process = new Process();
             process.StartInfo.UseShellExecute = false;
-            process.StartInfo.CreateNoWindow = false;
+            process.StartInfo.CreateNoWindow = true;
+
             process.StartInfo.RedirectStandardInput = true;
             process.StartInfo.RedirectStandardOutput = true;
             process.StartInfo.RedirectStandardError = true;
-            process.StartInfo.Arguments = null;
+            
             process.StartInfo.FileName = "PowerShell.exe";
+
             process.OutputDataReceived += (sender, args) => Display(sender, args.Data);
             process.ErrorDataReceived += (sender, args) => Display(sender, args.Data);
 
@@ -83,12 +91,15 @@ namespace Registry_Change_Display
                         @"dir -rec -erroraction ignore HKCU:\ | % name > .\{0}", HKCU_Current_FilePath);
                     process.StartInfo.Arguments += current_registry_HKCU_command;
                     process.Start();
+                    process.Close();
+
 
                     process.StartInfo.Arguments = null;
                     string compare_HKCU_registry_changes_command = string.Format(
                             @"Compare-Object (Get-Content -Path {0}.\Base-HKCU.txt)(Get-Content -Path .\{1}", path, HKCU_Current_FilePath);
                     process.StartInfo.Arguments += compare_HKCU_registry_changes_command;
                     process.Start();
+                    process.Close();
                 };
 
 
@@ -101,12 +112,15 @@ namespace Registry_Change_Display
                             @"dir -rec -erroraction ignore HKLM:\ | % name > .\{0}", HKLM_Current_FilePath);
                     process.StartInfo.Arguments += current_registry_HKLM_command;
                     process.Start();
+                    process.Close();
+
 
                     process.StartInfo.Arguments = null;
                     string compare_HKLM_registry_changes_command = string.Format(
                                                 @"Compare-Object (Get-Content -Path {0}.\Base-HKLM.txt)(Get-Content -Path .\{1})", path, HKLM_Current_FilePath);
                     process.StartInfo.Arguments += compare_HKLM_registry_changes_command;
                     process.Start();
+                    process.Close();
                 };
             }
             catch (Exception)
