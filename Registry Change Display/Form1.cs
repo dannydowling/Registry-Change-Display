@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Globalization;
 using System.Text;
 
 namespace Registry_Change_Display
@@ -6,7 +7,8 @@ namespace Registry_Change_Display
     public partial class Form1 : Form
     {
         string path = Path.GetDirectoryName(Application.ExecutablePath);
-        string date = string.Format(DateTime.Now.ToShortDateString()).Replace(@"\", "-");
+        string date = DateTime.Now.ToLongDateString();
+
         public Form1()
         {
             InitializeComponent();
