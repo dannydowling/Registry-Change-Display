@@ -21,10 +21,17 @@ namespace Registry_Change_Display
             //I figure the file should be open to read/write data to/from it.
 
             string HKCU_Init_FilePath = string.Format(@"{0}\Base-HKCU.txt", path);
-            if (File.Exists(HKCU_Init_FilePath))
+            AddQuotesIfRequired(HKCU_Init_FilePath);
+            string HKLM_Init_FilePath = string.Format(@"{0}\Base-HKLM.txt", path);
+            AddQuotesIfRequired(HKLM_Init_FilePath);
+
+            if (File.Exists(HKCU_Init_FilePath) && (File.Exists(HKLM_Init_FilePath)))
             {
                 string HKCU_Current_FilePath = string.Format(@"{0}\Current-HKCU-{1}.txt", path, date);
+                AddQuotesIfRequired(HKCU_Current_FilePath);
                 string HKLM_Current_FilePath = string.Format(@"{0}\Current-HKLM-{1}.txt", path, date);
+                AddQuotesIfRequired(HKLM_Current_FilePath);
+
                 try
                 {
                     // try starting two powershell consoles and reading the registry into them
@@ -75,12 +82,12 @@ namespace Registry_Change_Display
                     };
 
                     
-                    string HKLM_Init_FilePath = string.Format(@"{0}\Base-HKLM.txt", path);
                     //OpenOrCreate, ReadWrite
                     using (File.Open(HKLM_Init_FilePath, (FileMode)4, FileAccess.ReadWrite))
                     {
                         startProcess();
                         string HKLM_Init_Command = string.Format(@"dir -rec -erroraction ignore HKLM:\ | % name > {0}", HKLM_Init_FilePath).ToString();
+                        
                         process.StartInfo.Arguments += HKLM_Init_Command;
                         process.Start();
                         process.Close();
@@ -106,10 +113,12 @@ namespace Registry_Change_Display
 
                 string compare_HKCU_registry_changes_command =
                     string.Format(@"Compare-Object (Get-Content -Path {0}\Base-HKCU.txt)(Get-Content -Path {1}", path, HKCU_Current_FilePath).ToString();
+                
                 process.StartInfo.Arguments += compare_HKCU_registry_changes_command;
 
                 string compare_HKLM_registry_changes_command = 
                     string.Format(@"Compare-Object (Get-Content -Path {0}\Base-HKLM.txt)(Get-Content -Path {1})", path, HKLM_Current_FilePath).ToString();
+               
                 process.StartInfo.Arguments += compare_HKLM_registry_changes_command;
                 process.Start();
                 process.Close();
@@ -131,6 +140,15 @@ namespace Registry_Change_Display
             process.ErrorDataReceived += (sender, args) => Display(sender, args.Data);
             process.StartInfo.Arguments = null;
             return process;
+        }
+
+        // AddQuotesIfRequired handles spaces in folder names in the path.
+        public string AddQuotesIfRequired(string path)
+        {
+            return !string.IsNullOrWhiteSpace(path) ?
+                path.Contains(" ") && (!path.StartsWith("\"") && !path.EndsWith("\"")) ?
+                    "\"" + path + "\"" : path :
+                    string.Empty;
         }
 
         SynchronizationContext _syncContext;
