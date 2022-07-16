@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.Text;
@@ -6,9 +7,11 @@ namespace Registry_Change_Display
 {
     public partial class Registry_Change_Recorder : Form
     {
-        public event EventHandler<EventArgs> Changed;
+        public ObservableCollection<string> changes;
 
         Process process;
+
+
 
         string HKCU_Init_FilePath = string.Format(@"{0}\Base-HKCU.txt", Path.GetDirectoryName(Application.ExecutablePath));
 
@@ -52,11 +55,18 @@ namespace Registry_Change_Display
                   CultureInfo.InvariantCulture));
 
 
-
+        private readonly BindingSource _bindingSource = new ();
 
         public Registry_Change_Recorder()
         {
             InitializeComponent();
+
+            Shown += OnShown;
+        }
+
+        private void OnShown(object? sender, EventArgs e)
+        {
+            listBox1.DataSource = changes;            
         }
         private void create_Initial_Snapshot_Click(object sender, EventArgs e)
         {
@@ -143,7 +153,8 @@ namespace Registry_Change_Display
                         startProcess();
 
                         process.StartInfo.Arguments += compare_HKCU_registry_changes_command;
-
+                        process.OutputDataReceived += (sender, args) => Display(sender, args.Data);
+                        process.ErrorDataReceived += (sender, args) => Display(sender, args.Data);
                         process.Start();
                         process.Close();
                     }
@@ -155,6 +166,8 @@ namespace Registry_Change_Display
                     {
                         startProcess();
                         process.StartInfo.Arguments += compare_HKLM_registry_changes_command;
+                        process.OutputDataReceived += (sender, args) => Display(sender, args.Data);
+                        process.ErrorDataReceived += (sender, args) => Display(sender, args.Data);
                         process.Start();
                         process.Close();
                     }
@@ -179,28 +192,24 @@ namespace Registry_Change_Display
             process.StartInfo.RedirectStandardError = true;
 
             process.StartInfo.FileName = "PowerShell.exe";
-            process.OutputDataReceived += (sender, args) => Display(sender, args.Data);
-            process.ErrorDataReceived += (sender, args) => Display(sender, args.Data);
+           
             process.StartInfo.Arguments = null;
             return process;
         }
 
-
-
         SynchronizationContext _syncContext;
         void Display(object s, string args)
         {
-            _syncContext.Post(_ => listBox1.Items.Add(args), s);
+            if (changes == null)
+            {
+                changes = new ObservableCollection<string>();
+            }
+            _syncContext.Post(_ => changes.Add(args), s);
         }
-
+        
         private void listBox1_SelectedIndexChanged(object sender, EventArgs e)
         {
-
-        }
-
-        private void vScrollBar1_Scroll(object sender, ScrollEventArgs e)
-        {
-
+            
         }
     }
 }

@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             this.button1 = new System.Windows.Forms.Button();
             this.button2 = new System.Windows.Forms.Button();
             this.button3 = new System.Windows.Forms.Button();
@@ -36,6 +37,8 @@
             this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
             this.button5 = new System.Windows.Forms.Button();
             this.maskedTextBox1 = new System.Windows.Forms.MaskedTextBox();
+            this.registryChangeRecorderBindingSource = new System.Windows.Forms.BindingSource(this.components);
+            ((System.ComponentModel.ISupportInitialize)(this.registryChangeRecorderBindingSource)).BeginInit();
             this.SuspendLayout();
             // 
             // button1
@@ -108,6 +111,10 @@
             this.maskedTextBox1.Size = new System.Drawing.Size(207, 27);
             this.maskedTextBox1.TabIndex = 8;
             // 
+            // registryChangeRecorderBindingSource
+            // 
+            this.registryChangeRecorderBindingSource.DataSource = typeof(Registry_Change_Display.Registry_Change_Recorder);
+            // 
             // Registry_Change_Recorder
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 20F);
@@ -122,6 +129,7 @@
             this.Controls.Add(this.button1);
             this.Name = "Registry_Change_Recorder";
             this.Text = "Registry_Change_Recorder";
+            ((System.ComponentModel.ISupportInitialize)(this.registryChangeRecorderBindingSource)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -137,5 +145,6 @@
         private SaveFileDialog saveFileDialog1;
         private Button button5;
         private MaskedTextBox maskedTextBox1;
+        private BindingSource registryChangeRecorderBindingSource;
     }
 }
