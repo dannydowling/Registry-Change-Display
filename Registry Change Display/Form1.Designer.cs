@@ -89,7 +89,6 @@
             this.listBox1.Size = new System.Drawing.Size(556, 564);
             this.listBox1.Sorted = true;
             this.listBox1.TabIndex = 4;
-            this.listBox1.SelectedIndexChanged += new System.EventHandler(this.listBox1_SelectedIndexChanged);
             // 
             // saveFileDialog1
             // 

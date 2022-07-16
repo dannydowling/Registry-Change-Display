@@ -121,24 +121,21 @@ namespace Registry_Change_Display
                 {
                     try
                     {
-                        //OpenOrCreate, ReadWrite
+                        //File Mode 4 is OpenOrCreate
                         await using (File.Open(HKCU_Init_FilePath, (FileMode)4, FileAccess.ReadWrite))
                         {
 
                             startProcess();
-
                             process.StartInfo.Arguments += HKCU_Init_Command;
                             process.Start();
                             process.Close();
                         };
 
 
-                        //OpenOrCreate, ReadWrite
+                        //File Mode 4 is OpenOrCreate
                         await using (File.Open(HKLM_Init_FilePath, (FileMode)4, FileAccess.ReadWrite))
                         {
                             startProcess();
-
-
                             process.StartInfo.Arguments += HKLM_Init_Command;
                             process.Start();
                             process.Close();
@@ -161,6 +158,7 @@ namespace Registry_Change_Display
             {
                 try
                 {
+                    // File Mode 3 is Open only
                     await using (File.Open(HKCU_Current_FilePath, (FileMode)3, FileAccess.Read))
                     {
                         await using (File.Open(changes_HKCU_FilePath, (FileMode)4, FileAccess.ReadWrite))
@@ -175,6 +173,7 @@ namespace Registry_Change_Display
                         }
                     }
 
+                    // File Mode 3 is Open only
                     await using (File.Open(HKLM_Current_FilePath, (FileMode)3, FileAccess.Read))
                     {
                         await using (File.Open(changes_HKLM_FilePath, (FileMode)4, FileAccess.ReadWrite))
@@ -225,11 +224,6 @@ namespace Registry_Change_Display
         }
         // add the item to the collection and use the syncContext to coordinate between threads.
         _syncContext.Post(_ => changes.Add(args), s);
-    }
-
-    private void listBox1_SelectedIndexChanged(object sender, EventArgs e)
-    {
-
     }
 }
 }
