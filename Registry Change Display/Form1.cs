@@ -14,6 +14,10 @@ namespace Registry_Change_Display
 
         string HKLM_Init_FilePath = string.Format(@"{0}\Base-HKLM.txt", Path.GetDirectoryName(Application.ExecutablePath));
 
+        string changes_HKLM_FilePath = string.Format(@"{0}\changesHKLM.txt", Path.GetDirectoryName(Application.ExecutablePath));
+
+        string changes_HKCU_FilePath = string.Format(@"{0}\changesHKCU.txt", Path.GetDirectoryName(Application.ExecutablePath));
+
         string HKCU_Current_FilePath =
             string.Format(@"{0}\Current-HKCU-{1}.txt", Path.GetDirectoryName(Application.ExecutablePath), DateTime.Now.ToString("ddMMyyyy",
                   CultureInfo.InvariantCulture));
@@ -39,12 +43,12 @@ namespace Registry_Change_Display
 
 
         string compare_HKCU_registry_changes_command =
-                    string.Format(@"Compare-Object (Get-Content -Path {0}\Base-HKCU.txt)(Get-Content -Path {0}\Current-HKCU-{1}.txt", Path.GetDirectoryName(Application.ExecutablePath), DateTime.Now.ToString("ddMMyyyy",
+                    string.Format(@"Compare-Object (Get-Content -Path {0}\Base-HKCU.txt)(Get-Content -Path {0}\Current-HKCU-{1}.txt | % name > {0}\changesHKCU.txt", Path.GetDirectoryName(Application.ExecutablePath), DateTime.Now.ToString("ddMMyyyy",
                   CultureInfo.InvariantCulture));
 
 
         string compare_HKLM_registry_changes_command =
-                    string.Format(@"Compare-Object (Get-Content -Path {0}\Base-HKLM.txt)(Get-Content -Path {0}\Current-HKLM-{1}.txt", Path.GetDirectoryName(Application.ExecutablePath), DateTime.Now.ToString("ddMMyyyy",
+                    string.Format(@"Compare-Object (Get-Content -Path {0}\Base-HKLM.txt)(Get-Content -Path {0}\Current-HKLM-{1}.txt | % name > {0}\changesHKLM.txt", Path.GetDirectoryName(Application.ExecutablePath), DateTime.Now.ToString("ddMMyyyy",
                   CultureInfo.InvariantCulture));
 
 
@@ -134,22 +138,29 @@ namespace Registry_Change_Display
             {
                 using (File.Open(HKCU_Current_FilePath, (FileMode)4, FileAccess.Read))
                 {
+                    using (File.Open(changes_HKCU_FilePath, (FileMode)4, FileAccess.ReadWrite))
+                    {
+                        startProcess();
 
-                    startProcess();
+                        process.StartInfo.Arguments += compare_HKCU_registry_changes_command;
 
-                    process.StartInfo.Arguments += compare_HKCU_registry_changes_command;
-
-                    process.Start();
-                    process.Close();
+                        process.Start();
+                        process.Close();
+                    }
                 }
 
                 using (File.Open(HKLM_Current_FilePath, (FileMode)4, FileAccess.Read))
                 {
+                    using (File.Open(changes_HKLM_FilePath, (FileMode)4, FileAccess.ReadWrite))
+                    {
 
-                    startProcess();
-                    process.StartInfo.Arguments += compare_HKLM_registry_changes_command;
-                    process.Start();
-                    process.Close();
+
+
+                        startProcess();
+                        process.StartInfo.Arguments += compare_HKLM_registry_changes_command;
+                        process.Start();
+                        process.Close();
+                    }
                 }
             }
             catch (Exception)
