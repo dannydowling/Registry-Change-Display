@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Registry_Change_Display
 {
-    public partial class Form1 : Form
+    public partial class Registry_Change_Recorder : Form
     {
         public event EventHandler<EventArgs> Changed;
 
@@ -54,7 +54,7 @@ namespace Registry_Change_Display
 
 
 
-        public Form1()
+        public Registry_Change_Recorder()
         {
             InitializeComponent();
         }
@@ -136,7 +136,7 @@ namespace Registry_Change_Display
         {
             try
             {
-                using (File.Open(HKCU_Current_FilePath, (FileMode)4, FileAccess.Read))
+                using (File.Open(HKCU_Current_FilePath, (FileMode)3, FileAccess.Read))
                 {
                     using (File.Open(changes_HKCU_FilePath, (FileMode)4, FileAccess.ReadWrite))
                     {
@@ -149,13 +149,10 @@ namespace Registry_Change_Display
                     }
                 }
 
-                using (File.Open(HKLM_Current_FilePath, (FileMode)4, FileAccess.Read))
+                using (File.Open(HKLM_Current_FilePath, (FileMode)3, FileAccess.Read))
                 {
                     using (File.Open(changes_HKLM_FilePath, (FileMode)4, FileAccess.ReadWrite))
                     {
-
-
-
                         startProcess();
                         process.StartInfo.Arguments += compare_HKLM_registry_changes_command;
                         process.Start();
@@ -197,6 +194,11 @@ namespace Registry_Change_Display
         }
 
         private void listBox1_SelectedIndexChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void vScrollBar1_Scroll(object sender, ScrollEventArgs e)
         {
 
         }
