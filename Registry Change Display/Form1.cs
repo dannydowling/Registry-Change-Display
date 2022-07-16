@@ -7,35 +7,47 @@ namespace Registry_Change_Display
     public partial class Form1 : Form
     {
         public event EventHandler<EventArgs> Changed;
-        
+
         Process process;
 
-        string HKCU_Init_FilePath = AddQuotesIfRequired(string.Format(@"{0}\Base-HKCU.txt", Path.GetDirectoryName(Application.ExecutablePath)));
+        string HKCU_Init_FilePath = string.Format(@"{0}\Base-HKCU.txt", Path.GetDirectoryName(Application.ExecutablePath));
 
-        string HKLM_Init_FilePath = AddQuotesIfRequired(string.Format(@"{0}\Base-HKLM.txt", Path.GetDirectoryName(Application.ExecutablePath)));
+        string HKLM_Init_FilePath = string.Format(@"{0}\Base-HKLM.txt", Path.GetDirectoryName(Application.ExecutablePath));
 
-        string HKCU_Current_FilePath = 
-            AddQuotesIfRequired(string.Format(@"{0}\Current-HKCU-{1}.txt", Path.GetDirectoryName(Application.ExecutablePath), DateTime.Now.ToLongDateString()));
+        string HKCU_Current_FilePath =
+            string.Format(@"{0}\Current-HKCU-{1}.txt", Path.GetDirectoryName(Application.ExecutablePath), DateTime.Now.ToString("ddMMyyyy",
+                  CultureInfo.InvariantCulture));
 
-        string HKLM_Current_FilePath = 
-            AddQuotesIfRequired(string.Format(@"{0}\Current-HKLM-{1}.txt", Path.GetDirectoryName(Application.ExecutablePath), DateTime.Now.ToLongDateString()));
+        string HKLM_Current_FilePath =
+            string.Format(@"{0}\Current-HKLM-{1}.txt", Path.GetDirectoryName(Application.ExecutablePath), DateTime.Now.ToString("ddMMyyyy",
+                  CultureInfo.InvariantCulture));
 
-        string HKCU_Init_Command = 
-            string.Format(@"dir -rec -erroraction ignore HKCU:\ | % name > {0}", AddQuotesIfRequired(string.Format(@"{0}\Base-HKCU.txt", Path.GetDirectoryName(Application.ExecutablePath))));
+        string HKCU_Init_Command =
+            string.Format(@"dir -rec -erroraction ignore HKCU:\ | % name > {0}\Base-HKCU.txt",
+                Path.GetDirectoryName(Application.ExecutablePath));
 
-        string HKLM_Init_Command = string.Format(@"dir -rec -erroraction ignore HKLM:\ | % name > {0}", AddQuotesIfRequired(string.Format(@"{0}\Base-HKLM.txt", Path.GetDirectoryName(Application.ExecutablePath))));
+        string HKLM_Init_Command = string.Format(@"dir -rec -erroraction ignore HKLM:\ | % name > {0}\Base-HKLM.txt", Path.GetDirectoryName(Application.ExecutablePath));
 
         string current_registry_HKCU_command =
-                            string.Format(@"dir -rec -erroraction ignore HKCU:\ | % name > {0}", AddQuotesIfRequired(string.Format(@"{0}\Current-HKCU-{1}.txt", Path.GetDirectoryName(Application.ExecutablePath), DateTime.Now.ToLongDateString())));
+                            string.Format(@"dir -rec -erroraction ignore HKCU:\ | % name > {0}\Current-HKCU-{1}.txt",
+                                Path.GetDirectoryName(Application.ExecutablePath), DateTime.Now.ToString("ddMMyyyy",
+                  CultureInfo.InvariantCulture));
 
         string current_registry_HKLM_command =
-                            string.Format(@"dir -rec -erroraction ignore HKLM:\ | % name > {0}", AddQuotesIfRequired(string.Format(@"{0}\Current-HKLM-{1}.txt", Path.GetDirectoryName(Application.ExecutablePath), DateTime.Now.ToLongDateString())));
+                            string.Format(@"dir -rec -erroraction ignore HKLM:\ | % name >  {0}\Current-HKLM-{1}.txt", Path.GetDirectoryName(Application.ExecutablePath), DateTime.Now.ToString("ddMMyyyy",
+                  CultureInfo.InvariantCulture));
+
 
         string compare_HKCU_registry_changes_command =
-                    string.Format(@"Compare-Object (Get-Content -Path {0})(Get-Content -Path {1}", AddQuotesIfRequired(string.Format(@"{0}\Base-HKCU.txt", Path.GetDirectoryName(Application.ExecutablePath))), AddQuotesIfRequired(string.Format(@"{0}\Current-HKCU-{1}.txt", Path.GetDirectoryName(Application.ExecutablePath), DateTime.Now.ToLongDateString())));
+                    string.Format(@"Compare-Object (Get-Content -Path {0}\Base-HKCU.txt)(Get-Content -Path {0}\Current-HKCU-{1}.txt", Path.GetDirectoryName(Application.ExecutablePath), DateTime.Now.ToString("ddMMyyyy",
+                  CultureInfo.InvariantCulture));
+
 
         string compare_HKLM_registry_changes_command =
-                    string.Format(@"Compare-Object (Get-Content -Path {0})(Get-Content -Path {1})", AddQuotesIfRequired(string.Format(@"{0}\Base-HKCU.txt", Path.GetDirectoryName(Application.ExecutablePath))), AddQuotesIfRequired(string.Format(@"{0}\Current-HKLM-{1}.txt", Path.GetDirectoryName(Application.ExecutablePath), DateTime.Now.ToLongDateString())));
+                    string.Format(@"Compare-Object (Get-Content -Path {0}\Base-HKLM.txt)(Get-Content -Path {0}\Current-HKLM-{1}.txt", Path.GetDirectoryName(Application.ExecutablePath), DateTime.Now.ToString("ddMMyyyy",
+                  CultureInfo.InvariantCulture));
+
+
 
 
         public Form1()
@@ -44,7 +56,7 @@ namespace Registry_Change_Display
         }
         private void create_Initial_Snapshot_Click(object sender, EventArgs e)
         {
-            
+
             //create the files and then pipe to them the data for the base snapshot.
             //I figure the file should be open to read/write data to/from it.
 
@@ -57,7 +69,7 @@ namespace Registry_Change_Display
                     //OpenOrCreate, ReadWrite
                     using (File.Open(HKCU_Current_FilePath, (FileMode)4, FileAccess.ReadWrite))
                     {
-                        startProcess();                     
+                        startProcess();
                         process.StartInfo.Arguments += current_registry_HKCU_command;
                         process.Start();
                         process.Close();
@@ -80,27 +92,27 @@ namespace Registry_Change_Display
                 }
             }
             else
-            {                
+            {
                 try
-                {       
+                {
                     //OpenOrCreate, ReadWrite
                     using (File.Open(HKCU_Init_FilePath, (FileMode)4, FileAccess.ReadWrite))
                     {
 
                         startProcess();
-                        
+
                         process.StartInfo.Arguments += HKCU_Init_Command;
                         process.Start();
                         process.Close();
                     };
 
-                    
+
                     //OpenOrCreate, ReadWrite
                     using (File.Open(HKLM_Init_FilePath, (FileMode)4, FileAccess.ReadWrite))
                     {
                         startProcess();
-                        
-                        
+
+
                         process.StartInfo.Arguments += HKLM_Init_Command;
                         process.Start();
                         process.Close();
@@ -118,16 +130,34 @@ namespace Registry_Change_Display
 
         private void List_Changes_Click(object sender, EventArgs e)
         {
-            
+            try
+            {
+                using (File.Open(HKCU_Current_FilePath, (FileMode)4, FileAccess.Read))
+                {
 
-            startProcess();
-    
-                process.StartInfo.Arguments += compare_HKCU_registry_changes_command;                
-               
-                process.StartInfo.Arguments += compare_HKLM_registry_changes_command;
-                process.Start();
+                    startProcess();
+
+                    process.StartInfo.Arguments += compare_HKCU_registry_changes_command;
+
+                    process.Start();
+                    process.Close();
+                }
+
+                using (File.Open(HKLM_Current_FilePath, (FileMode)4, FileAccess.Read))
+                {
+
+                    startProcess();
+                    process.StartInfo.Arguments += compare_HKLM_registry_changes_command;
+                    process.Start();
+                    process.Close();
+                }
+            }
+            catch (Exception)
+            {
                 process.Close();
-            
+                process.Dispose();
+                throw;
+            }
         }
 
         Process startProcess()
@@ -147,14 +177,7 @@ namespace Registry_Change_Display
             return process;
         }
 
-        // AddQuotesIfRequired handles spaces in folder names in the path.
-        public static string AddQuotesIfRequired(string path)
-        {
-            return !string.IsNullOrWhiteSpace(path) ?
-                path.Contains(" ") && (!path.StartsWith("\"")) ?
-                    "\"" + path + "\"" : path :
-                    string.Empty;
-        }
+
 
         SynchronizationContext _syncContext;
         void Display(object s, string args)
