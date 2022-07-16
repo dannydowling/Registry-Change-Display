@@ -17,8 +17,8 @@ namespace Registry_Change_Display
         string HKCU_Init_FilePath = string.Format(@"{0}\Base-HKCU.txt", Path.GetDirectoryName(Application.ExecutablePath));
         // Where to write the base snapshot for HKLM
         string HKLM_Init_FilePath = string.Format(@"{0}\Base-HKLM.txt", Path.GetDirectoryName(Application.ExecutablePath));
-        
-        
+
+
         // Where to write the current snapshot for HKCU
         string HKCU_Current_FilePath =
             string.Format(@"{0}\Current-HKCU-{1}.txt", Path.GetDirectoryName(Application.ExecutablePath), DateTime.Now.ToString("ddMMyyyy",
@@ -87,9 +87,9 @@ namespace Registry_Change_Display
 
                      try
                      {
-                        // try starting two powershell consoles and reading the registry into them
+                         // try starting two powershell consoles and reading the registry into them
 
-                        //OpenOrCreate, ReadWrite
+                         //OpenOrCreate, ReadWrite
                          await using (File.Open(HKCU_Current_FilePath, (FileMode)4, FileAccess.ReadWrite))
                          {
                              startProcess();
@@ -98,7 +98,7 @@ namespace Registry_Change_Display
                              process.Close();
                          };
 
-                        //OpenOrCreate, ReadWrite
+                         //OpenOrCreate, ReadWrite
                          await using (File.Open(HKLM_Current_FilePath, (FileMode)4, FileAccess.ReadWrite))
                          {
                              startProcess();
@@ -197,33 +197,33 @@ namespace Registry_Change_Display
                 }
             });
         }
-    
 
-    Process startProcess()
-    {
-        process = new Process();
-        process.StartInfo.UseShellExecute = false;
-        process.StartInfo.CreateNoWindow = true;
 
-        process.StartInfo.RedirectStandardInput = true;
-        process.StartInfo.RedirectStandardOutput = true;
-        process.StartInfo.RedirectStandardError = true;
-
-        process.StartInfo.FileName = "PowerShell.exe";
-
-        process.StartInfo.Arguments = null;
-        return process;
-    }
-
-    SynchronizationContext _syncContext;
-    void Display(object s, string args)
-    {
-        if (changes == null)
+        Process startProcess()
         {
-            changes = new ObservableCollection<string>();
+            process = new Process();
+            process.StartInfo.UseShellExecute = false;
+            process.StartInfo.CreateNoWindow = true;
+
+            process.StartInfo.RedirectStandardInput = true;
+            process.StartInfo.RedirectStandardOutput = true;
+            process.StartInfo.RedirectStandardError = true;
+
+            process.StartInfo.FileName = "PowerShell.exe";
+
+            process.StartInfo.Arguments = null;
+            return process;
         }
-        // add the item to the collection and use the syncContext to coordinate between threads.
-        _syncContext.Post(_ => changes.Add(args), s);
+
+        SynchronizationContext _syncContext;
+        void Display(object s, string args)
+        {
+            if (changes == null)
+            {
+                changes = new ObservableCollection<string>();
+            }
+            // add the item to the collection and use the syncContext to coordinate between threads.
+            _syncContext.Post(_ => changes.Add(args), s);
+        }
     }
-}
 }
