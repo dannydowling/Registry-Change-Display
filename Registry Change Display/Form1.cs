@@ -1,16 +1,17 @@
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Globalization;
-using System.Text;
 
 namespace Registry_Change_Display
 {
     public partial class Registry_Change_Recorder : Form
     {
+
+        // changes are the things that have changed between registry images
         public ObservableCollection<string> changes;
 
+        // process is an instance of PowerShell
         Process process;
-
 
         // Where to write the base snapshot for HKCU 
         string HKCU_Init_FilePath = string.Format(@"{0}\Base-HKCU.txt", Path.GetDirectoryName(Application.ExecutablePath));
