@@ -46,17 +46,6 @@ namespace Registry_Change_Display
         string current_registry_HKLM_command =
                             string.Format(@"dir -rec -erroraction ignore HKLM:\ | % name >  {0}\Current-HKLM-{1}.txt", Path.GetDirectoryName(Application.ExecutablePath), DateTime.Now.ToString("ddMMyyyy", CultureInfo.InvariantCulture));
 
-
-        // Command to compare the base HKCU file with the current registry snapshot file
-        string compare_HKCU_registry_changes_command =
-                    string.Format(@"Compare-Object (Get-Content -Path {0}\Current-HKCU-{1}.txt) (Get-Content -Path {0}\Base-HKCU.txt)  | % name > {0}\changesHKCU.txt", Path.GetDirectoryName(Application.ExecutablePath), DateTime.Now.ToString("ddMMyyyy",
-                  CultureInfo.InvariantCulture));
-
-        // Command to compare the base HKLM file with the current registry snapshot file
-        string compare_HKLM_registry_changes_command =
-                    string.Format(@"Compare-Object (Get-Content -Path {0}\Current-HKLM-{1}.txt) (Get-Content -Path {0}\Base-HKLM.txt) | % name > {0}\changesHKLM.txt", Path.GetDirectoryName(Application.ExecutablePath), DateTime.Now.ToString("ddMMyyyy",
-                  CultureInfo.InvariantCulture));
-
         // Where to write the file containing the changes from base to current
         string changes_FilePath = string.Format(@"{0}\changes.txt", Path.GetDirectoryName(Application.ExecutablePath));
 
@@ -200,18 +189,6 @@ namespace Registry_Change_Display
 
             process.StartInfo.Arguments = null;
             return process;
-        }
-
-        SynchronizationContext _syncContext;
-        void Display(object s, string args)
-        {
-            if (changes == null)
-            {
-                changes = new ObservableCollection<string>();
-            }
-            // add the item to the collection and use the syncContext to coordinate between threads.
-            _syncContext.Post(_ => changes.Add(args), s);
-
         }
     }
 }
