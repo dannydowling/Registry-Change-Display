@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Globalization;
+using DiffMatchPatch;
 
 namespace Registry_Change_Display
 {
@@ -48,19 +49,17 @@ namespace Registry_Change_Display
 
         // Command to compare the base HKCU file with the current registry snapshot file
         string compare_HKCU_registry_changes_command =
-                    string.Format(@"Compare-Object (Get-Content -Path {0}\Base-HKCU.txt)(Get-Content -Path {0}\Current-HKCU-{1}.txt | % name > {0}\changesHKCU.txt", Path.GetDirectoryName(Application.ExecutablePath), DateTime.Now.ToString("ddMMyyyy",
+                    string.Format(@"Compare-Object (Get-Content -Path {0}\Current-HKCU-{1}.txt) (Get-Content -Path {0}\Base-HKCU.txt)  | % name > {0}\changesHKCU.txt", Path.GetDirectoryName(Application.ExecutablePath), DateTime.Now.ToString("ddMMyyyy",
                   CultureInfo.InvariantCulture));
 
         // Command to compare the base HKLM file with the current registry snapshot file
         string compare_HKLM_registry_changes_command =
-                    string.Format(@"Compare-Object (Get-Content -Path {0}\Base-HKLM.txt)(Get-Content -Path {0}\Current-HKLM-{1}.txt | % name > {0}\changesHKLM.txt", Path.GetDirectoryName(Application.ExecutablePath), DateTime.Now.ToString("ddMMyyyy",
+                    string.Format(@"Compare-Object (Get-Content -Path {0}\Current-HKLM-{1}.txt) (Get-Content -Path {0}\Base-HKLM.txt) | % name > {0}\changesHKLM.txt", Path.GetDirectoryName(Application.ExecutablePath), DateTime.Now.ToString("ddMMyyyy",
                   CultureInfo.InvariantCulture));
 
-        // Where to write the file containing the changes from base to current for HKCU
-        string changes_HKCU_FilePath = string.Format(@"{0}\changesHKCU.txt", Path.GetDirectoryName(Application.ExecutablePath));
+        // Where to write the file containing the changes from base to current
+        string changes_FilePath = string.Format(@"{0}\changes.txt", Path.GetDirectoryName(Application.ExecutablePath));
 
-        // Where to write the file containing the changes from base to current for HKLM
-        string changes_HKLM_FilePath = string.Format(@"{0}\changesHKLM.txt", Path.GetDirectoryName(Application.ExecutablePath));
 
 
         public Registry_Change_Recorder()
@@ -151,54 +150,42 @@ namespace Registry_Change_Display
             }
         }
 
-
+       
         private void List_Changes_Click(object sender, EventArgs e)
         {
-            Task.Factory.StartNew(async () =>
+
+            try
             {
-                try
+                string HKCUtext1 = File.ReadAllText(HKCU_Current_FilePath);
+                string HKCUtext2 = File.ReadAllText(HKCU_Init_FilePath);
+                string HKLMtext1 = File.ReadAllText(HKLM_Current_FilePath);
+                string HKLMtext2 = File.ReadAllText(HKLM_Init_FilePath);
+                List<Diff> changes = new List<Diff>();
+
+                diff_match_patch dmp = new diff_match_patch();
+                changes.AddRange(dmp.diff_main(HKCUtext1, HKCUtext2));
+                changes.AddRange(dmp.diff_main(HKLMtext1, HKLMtext2));
+
+                List<string> convertedDiffs = new List<string>();
+                foreach (var diff in changes)
                 {
-                    // File Mode 3 is Open only
-                    await using (File.Open(HKCU_Current_FilePath, (FileMode)3, FileAccess.Read))
-                    {
-                        await using (File.Open(changes_HKCU_FilePath, (FileMode)4, FileAccess.ReadWrite))
-                        {
-                            startProcess();
-
-                            process.StartInfo.Arguments += compare_HKCU_registry_changes_command;
-                            process.OutputDataReceived += (sender, args) => Display(sender, args.Data);
-                            process.ErrorDataReceived += (sender, args) => Display(sender, args.Data);
-                            process.Start();
-                            process.Close();
-                        }
-                    }
-
-                    // File Mode 3 is Open only
-                    await using (File.Open(HKLM_Current_FilePath, (FileMode)3, FileAccess.Read))
-                    {
-                        await using (File.Open(changes_HKLM_FilePath, (FileMode)4, FileAccess.ReadWrite))
-                        {
-                            startProcess();
-                            process.StartInfo.Arguments += compare_HKLM_registry_changes_command;
-                            process.OutputDataReceived += (sender, args) => Display(sender, args.Data);
-                            process.ErrorDataReceived += (sender, args) => Display(sender, args.Data);
-                            process.Start();
-                            process.Close();
-                        }
-                    }
+                    //inserted, deleted...
+                    convertedDiffs.Add(diff.text + " " + diff.operation.ToString());
                 }
 
-
-                catch (Exception)
+                using (File.Open(changes_FilePath, (FileMode)4, FileAccess.ReadWrite))
                 {
-                    process.Close();
-                    process.Dispose();
-                    throw;
+                    File.WriteAllLines(changes_FilePath, convertedDiffs);
                 }
-            });
+            }
+
+            catch (Exception)
+            {
+                throw;
+            }
         }
 
-
+        
         Process startProcess()
         {
             process = new Process();
@@ -224,6 +211,7 @@ namespace Registry_Change_Display
             }
             // add the item to the collection and use the syncContext to coordinate between threads.
             _syncContext.Post(_ => changes.Add(args), s);
+
         }
     }
 }
