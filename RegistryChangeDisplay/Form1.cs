@@ -174,7 +174,7 @@ namespace Registry_Change_Display
                 {
                     throw;
                 }
-            }
+            });
         }
 
         
