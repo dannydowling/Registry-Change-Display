@@ -142,35 +142,38 @@ namespace Registry_Change_Display
        
         private void List_Changes_Click(object sender, EventArgs e)
         {
-
-            try
+            Task.Factory.StartNew(async () =>
             {
-                string HKCUtext1 = File.ReadAllText(HKCU_Current_FilePath);
-                string HKCUtext2 = File.ReadAllText(HKCU_Init_FilePath);
-                string HKLMtext1 = File.ReadAllText(HKLM_Current_FilePath);
-                string HKLMtext2 = File.ReadAllText(HKLM_Init_FilePath);
-                List<Diff> changes = new List<Diff>();
 
-                diff_match_patch dmp = new diff_match_patch();
-                changes.AddRange(dmp.diff_main(HKCUtext1, HKCUtext2));
-                changes.AddRange(dmp.diff_main(HKLMtext1, HKLMtext2));
-
-                List<string> convertedDiffs = new List<string>();
-                foreach (var diff in changes)
+                try
                 {
-                    //inserted, deleted...
-                    convertedDiffs.Add(diff.text + " " + diff.operation.ToString());
+                    string HKCUtext1 = await File.ReadAllTextAsync(HKCU_Current_FilePath);
+                    string HKCUtext2 = await File.ReadAllTextAsync(HKCU_Init_FilePath);
+                    string HKLMtext1 = await File.ReadAllTextAsync(HKLM_Current_FilePath);
+                    string HKLMtext2 = await File.ReadAllTextAsync(HKLM_Init_FilePath);
+                    List<Diff> changes = new List<Diff>();
+
+                    diff_match_patch dmp = new diff_match_patch();
+                    changes.AddRange(dmp.diff_main(HKCUtext1, HKCUtext2));
+                    changes.AddRange(dmp.diff_main(HKLMtext1, HKLMtext2));
+
+                    List<string> convertedDiffs = new List<string>();
+                    foreach (var diff in changes)
+                    {
+                        //inserted, deleted...
+                        convertedDiffs.Add(diff.text + " " + diff.operation.ToString());
+                    }
+
+                    using (File.Open(changes_FilePath, (FileMode)4, FileAccess.ReadWrite))
+                    {
+                        File.WriteAllLines(changes_FilePath, convertedDiffs);
+                    }
                 }
 
-                using (File.Open(changes_FilePath, (FileMode)4, FileAccess.ReadWrite))
+                catch (Exception)
                 {
-                    File.WriteAllLines(changes_FilePath, convertedDiffs);
+                    throw;
                 }
-            }
-
-            catch (Exception)
-            {
-                throw;
             }
         }
 
