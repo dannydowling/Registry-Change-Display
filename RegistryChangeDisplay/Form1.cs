@@ -17,7 +17,7 @@ namespace Registry_Change_Display
 
         // today is current information
         string HKCU_Today_FilePath { get; }
-        string HKLM_Today_FilePath { get;  }
+        string HKLM_Today_FilePath { get; }
         string HKCU_Today_Dump_Command { get; }
         string HKLM_Today_Dump_Command { get; }
 
@@ -25,12 +25,17 @@ namespace Registry_Change_Display
         // The files selected in the loader
         string File1_Path { get; set; }
         string File2_Path { get; set; }
-        string File1_Dump_Command { get; set; }
-        string File2_Dump_Command { get; set; }
+
+
+        // The text in the files to diff
+        string[] File1_string_array { get; set; }
+        string[] File2_string_array { get; set; }
 
 
         // changes is the diff between loaded and base
         string changes_FilePath { get; }
+
+        IEnumerable<string> changes { get; set; }
 
         // diffCollection is the array of different entries
         List<string> diffCollection { get; set; }
@@ -46,14 +51,15 @@ namespace Registry_Change_Display
             HKLM_Init_Command = string.Format(@"dir -rec -erroraction ignore HKLM:\ | % name > {0}\Base-HKLM.txt", Path.GetDirectoryName(Application.ExecutablePath));
 
             // the registry dump with todays date
-            HKCU_Today_FilePath = string.Format(@"{0}\Current-HKCU-{1}.txt", 
+            HKCU_Today_FilePath = string.Format(@"{0}\Current-HKCU-{1}.txt",
                 Path.GetDirectoryName(Application.ExecutablePath), DateTime.Now.ToString("ddMMyyyy", CultureInfo.InvariantCulture));
 
-            HKLM_Today_FilePath = string.Format(@"{0}\Current-HKLM-{1}.txt", 
-                Path.GetDirectoryName(Application.ExecutablePath), DateTime.Now.ToString("ddMMyyyy", CultureInfo.InvariantCulture));            
+            HKLM_Today_FilePath = string.Format(@"{0}\Current-HKLM-{1}.txt",
+                Path.GetDirectoryName(Application.ExecutablePath), DateTime.Now.ToString("ddMMyyyy", CultureInfo.InvariantCulture));
 
             HKCU_Today_Dump_Command = string.Format(@"dir -rec -erroraction ignore HKCU:\ | % name > {0}\Current-HKCU-{1}.txt",
                                 Path.GetDirectoryName(Application.ExecutablePath), DateTime.Now.ToString("ddMMyyyy", CultureInfo.InvariantCulture));
+
             HKLM_Today_Dump_Command = string.Format(@"dir -rec -erroraction ignore HKLM:\ | % name >  {0}\Current-HKLM-{1}.txt", Path.GetDirectoryName(Application.ExecutablePath), DateTime.Now.ToString("ddMMyyyy", CultureInfo.InvariantCulture));
 
 
@@ -61,7 +67,7 @@ namespace Registry_Change_Display
             changes_FilePath = string.Format(@"{0}\changes.txt", Path.GetDirectoryName(Application.ExecutablePath));
         }
 
-      
+
         private void Image_Registry_Click(object sender, EventArgs e)
         {
             //create the files and then pipe to them the data for the base snapshot.
@@ -134,7 +140,7 @@ namespace Registry_Change_Display
             }
         }
 
-       
+
         private void Diff_File1_File2_Click(object sender, EventArgs e)
         {
             Task.Factory.StartNew(async () =>
@@ -142,30 +148,64 @@ namespace Registry_Change_Display
 
                 try
                 {
-                    string HKCUtext1 = await File.ReadAllTextAsync(HKCU_Today_FilePath);
-                    string HKCUtext2 = await File.ReadAllTextAsync(HKCU_Init_FilePath);
-                    string HKLMtext1 = await File.ReadAllTextAsync(HKLM_Today_FilePath);
-                    string HKLMtext2 = await File.ReadAllTextAsync(HKLM_Init_FilePath);
-                    List<Diff> changes = new List<Diff>();
 
-                    diff_match_patch dmp = new diff_match_patch();
-                    changes.AddRange(dmp.diff_main(HKCUtext1, HKCUtext2));
-                    changes.AddRange(dmp.diff_main(HKLMtext1, HKLMtext2));
-
-                    List<string> convertedDiffs = new List<string>();
-                    foreach (var diff in changes)
+                    if (File1_Path != string.Empty)
                     {
-                        //inserted, deleted...
-                        convertedDiffs.Add(diff.text + " " + diff.operation.ToString());
+                        // if file1 is loaded
+                        File1_string_array = await File.ReadAllLinesAsync(File1_Path);
+
+                        if (File2_Path != string.Empty)
+                        {
+                            File2_string_array = await File.ReadAllLinesAsync(File2_Path);
+                        }
+                        else
+                        {
+                            File2_string_array = await File.ReadAllLinesAsync(HKCU_Today_FilePath);
+                            File2_string_array = await File.ReadAllLinesAsync(HKLM_Today_FilePath);
+                        }
                     }
-
-                    diffCollection = convertedDiffs;
-                        File.WriteAllLines(changes_FilePath, convertedDiffs);                    
+                    else
+                    {
+                        File1_string_array = await File.ReadAllLinesAsync(HKCU_Init_FilePath);
+                        File1_string_array = await File.ReadAllLinesAsync(HKLM_Init_FilePath);
+                    }
                 }
-
-                catch (Exception)
+                finally
                 {
-                    throw;
+                    changes = File2_string_array.Except(File1_string_array);
+
+
+                    //List<Diff> changes = new List<Diff>();
+
+                    //diff_match_patch dmp = new diff_match_patch();
+
+
+                    //for (int i = 0; i < File2_string_array.Length; --i)
+                    //{
+                    //   var diff = dmp.diff_main(File1_string_array[i], File2_string_array[i]) ;
+                    //    foreach (var item in diff)
+                    //    {
+                    //        if (item.operation != Operation.EQUAL)
+                    //        {
+                    //            changes.Add(item);
+                    //            File3_string_array.Append(File2_string_array[i]);
+                                
+                    
+                    // I couldn't find a way to remove the compared line from the array.
+
+
+                    //        }
+                    //    }
+                    //}
+                    //List<string> convertedDiffs = new List<string>();
+                    //foreach (var diff in changes)
+                    //{
+                    //    //inserted, deleted...
+                    //    convertedDiffs.Add(diff.text + " " + diff.operation.ToString());
+                    //}
+
+                    //diffCollection = convertedDiffs;
+                    
                 }
             });
         }
@@ -190,11 +230,13 @@ namespace Registry_Change_Display
         private async void Save_File_Click(object sender, EventArgs e)
         {
             DialogResult saveresult = saveFileDialog1.ShowDialog();
+            saveFileDialog1.InitialDirectory = Path.GetDirectoryName(Application.ExecutablePath);
             if (saveresult == DialogResult.OK)
             {
                 try
                 {
                     string path = saveFileDialog1.FileName;
+                    File.WriteAllLines(path, changes);
                     StreamWriter sw = new StreamWriter(path);
                     foreach (var item in diffCollection)
                     {
@@ -213,6 +255,7 @@ namespace Registry_Change_Display
         {
             int size = -1;
             OpenFileDialog openFileDialog1 = new OpenFileDialog();
+            openFileDialog1.InitialDirectory = Path.GetDirectoryName(Application.ExecutablePath);
             DialogResult result = openFileDialog1.ShowDialog(); // Show the dialog.
             if (result == DialogResult.OK) // Test result.
             {
@@ -234,6 +277,7 @@ namespace Registry_Change_Display
         {
             int size = -1;
             OpenFileDialog openFileDialog2 = new OpenFileDialog();
+            openFileDialog2.InitialDirectory = Path.GetDirectoryName(Application.ExecutablePath);
             DialogResult result = openFileDialog2.ShowDialog(); // Show the dialog.
             if (result == DialogResult.OK) // Test result.
             {
