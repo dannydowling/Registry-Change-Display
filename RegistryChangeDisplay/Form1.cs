@@ -22,13 +22,11 @@ namespace Registry_Change_Display
 
         // Where to write the current snapshot for HKCU
         string HKCU_Current_FilePath =
-            string.Format(@"{0}\Current-HKCU-{1}.txt", Path.GetDirectoryName(Application.ExecutablePath), DateTime.Now.ToString("ddMMyyyy",
-                  CultureInfo.InvariantCulture));
+            string.Format(@"{0}\Current-HKCU-{1}.txt", Path.GetDirectoryName(Application.ExecutablePath), DateTime.Now.ToString("ddMMyyyy", CultureInfo.InvariantCulture));
 
         // Where to write the current snapshot for HKLM
         string HKLM_Current_FilePath =
-            string.Format(@"{0}\Current-HKLM-{1}.txt", Path.GetDirectoryName(Application.ExecutablePath), DateTime.Now.ToString("ddMMyyyy",
-                  CultureInfo.InvariantCulture));
+            string.Format(@"{0}\Current-HKLM-{1}.txt", Path.GetDirectoryName(Application.ExecutablePath), DateTime.Now.ToString("ddMMyyyy", CultureInfo.InvariantCulture));
 
 
         // Command to write the HKCU information to the base file
@@ -164,10 +162,10 @@ namespace Registry_Change_Display
                         convertedDiffs.Add(diff.text + " " + diff.operation.ToString());
                     }
 
-                    using (File.Open(changes_FilePath, (FileMode)4, FileAccess.ReadWrite))
-                    {
+                    //using (File.Open(changes_FilePath, (FileMode)4, FileAccess.ReadWrite))
+                    //{
                         File.WriteAllLines(changes_FilePath, convertedDiffs);
-                    }
+                    //}
                 }
 
                 catch (Exception)
