@@ -1,7 +1,5 @@
-using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Globalization;
-using DiffMatchPatch;
 
 namespace Registry_Change_Display
 {
