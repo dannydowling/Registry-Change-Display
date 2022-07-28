@@ -7,61 +7,62 @@ namespace Registry_Change_Display
 {
     public partial class Registry_Change_Recorder : Form
     {
-
-        // changes are the things that have changed between registry images
-        public ObservableCollection<string> changes;
-
-        // process is an instance of PowerShell
         Process process;
 
-        // Where to write the base snapshot for HKCU 
-        string HKCU_Init_FilePath = string.Format(@"{0}\Base-HKCU.txt", Path.GetDirectoryName(Application.ExecutablePath));
-        // Where to write the base snapshot for HKLM
-        string HKLM_Init_FilePath = string.Format(@"{0}\Base-HKLM.txt", Path.GetDirectoryName(Application.ExecutablePath));
+        //init is on first run
+        string HKCU_Init_FilePath { get; }
+        string HKLM_Init_FilePath { get; }
+        string HKCU_Init_Command { get; }
+        string HKLM_Init_Command { get; }
+
+        // today is current information
+        string HKCU_Today_FilePath { get; }
+        string HKLM_Today_FilePath { get;  }
+        string HKCU_Today_Dump_Command { get; }
+        string HKLM_Today_Dump_Command { get; }
 
 
-        // Where to write the current snapshot for HKCU
-        string HKCU_Current_FilePath =
-            string.Format(@"{0}\Current-HKCU-{1}.txt", Path.GetDirectoryName(Application.ExecutablePath), DateTime.Now.ToString("ddMMyyyy", CultureInfo.InvariantCulture));
-
-        // Where to write the current snapshot for HKLM
-        string HKLM_Current_FilePath =
-            string.Format(@"{0}\Current-HKLM-{1}.txt", Path.GetDirectoryName(Application.ExecutablePath), DateTime.Now.ToString("ddMMyyyy", CultureInfo.InvariantCulture));
+        // The files selected in the loader
+        string File1_Path { get; set; }
+        string File2_Path { get; set; }
+        string File1_Dump_Command { get; set; }
+        string File2_Dump_Command { get; set; }
 
 
-        // Command to write the HKCU information to the base file
-        string HKCU_Init_Command = string.Format(@"dir -rec -erroraction ignore HKCU:\ | % name > {0}\Base-HKCU.txt", Path.GetDirectoryName(Application.ExecutablePath));
+        // changes is the diff between loaded and base
+        string changes_FilePath { get; }
 
-        // Command to write the HKLM information to the base file
-        string HKLM_Init_Command = string.Format(@"dir -rec -erroraction ignore HKLM:\ | % name > {0}\Base-HKLM.txt", Path.GetDirectoryName(Application.ExecutablePath));
-
-        // Command to write the HKCU information to a file with appended date and time
-        string current_registry_HKCU_command =
-                            string.Format(@"dir -rec -erroraction ignore HKCU:\ | % name > {0}\Current-HKCU-{1}.txt",
-                                Path.GetDirectoryName(Application.ExecutablePath), DateTime.Now.ToString("ddMMyyyy", CultureInfo.InvariantCulture));
-
-        // Command to write the HKLM information to a file with appended date and time
-        string current_registry_HKLM_command =
-                            string.Format(@"dir -rec -erroraction ignore HKLM:\ | % name >  {0}\Current-HKLM-{1}.txt", Path.GetDirectoryName(Application.ExecutablePath), DateTime.Now.ToString("ddMMyyyy", CultureInfo.InvariantCulture));
-
-        // Where to write the file containing the changes from base to current
-        string changes_FilePath = string.Format(@"{0}\changes.txt", Path.GetDirectoryName(Application.ExecutablePath));
-
-
+        // diffCollection is the array of different entries
+        List<string> diffCollection { get; set; }
 
         public Registry_Change_Recorder()
         {
             InitializeComponent();
-            // Form.Shown is run when the form is first displayed.
-            Shown += OnShown;
+
+            // the base files from the first time the app is run on a fresh install
+            HKCU_Init_FilePath = string.Format(@"{0}\Base-HKCU.txt", Path.GetDirectoryName(Application.ExecutablePath));
+            HKLM_Init_FilePath = string.Format(@"{0}\Base-HKLM.txt", Path.GetDirectoryName(Application.ExecutablePath));
+            HKCU_Init_Command = string.Format(@"dir -rec -erroraction ignore HKCU:\ | % name > {0}\Base-HKCU.txt", Path.GetDirectoryName(Application.ExecutablePath));
+            HKLM_Init_Command = string.Format(@"dir -rec -erroraction ignore HKLM:\ | % name > {0}\Base-HKLM.txt", Path.GetDirectoryName(Application.ExecutablePath));
+
+            // the registry dump with todays date
+            HKCU_Today_FilePath = string.Format(@"{0}\Current-HKCU-{1}.txt", 
+                Path.GetDirectoryName(Application.ExecutablePath), DateTime.Now.ToString("ddMMyyyy", CultureInfo.InvariantCulture));
+
+            HKLM_Today_FilePath = string.Format(@"{0}\Current-HKLM-{1}.txt", 
+                Path.GetDirectoryName(Application.ExecutablePath), DateTime.Now.ToString("ddMMyyyy", CultureInfo.InvariantCulture));            
+
+            HKCU_Today_Dump_Command = string.Format(@"dir -rec -erroraction ignore HKCU:\ | % name > {0}\Current-HKCU-{1}.txt",
+                                Path.GetDirectoryName(Application.ExecutablePath), DateTime.Now.ToString("ddMMyyyy", CultureInfo.InvariantCulture));
+            HKLM_Today_Dump_Command = string.Format(@"dir -rec -erroraction ignore HKLM:\ | % name >  {0}\Current-HKLM-{1}.txt", Path.GetDirectoryName(Application.ExecutablePath), DateTime.Now.ToString("ddMMyyyy", CultureInfo.InvariantCulture));
+
+
+
+            changes_FilePath = string.Format(@"{0}\changes.txt", Path.GetDirectoryName(Application.ExecutablePath));
         }
 
-        private void OnShown(object? sender, EventArgs e)
-        {
-            // bind the listbox to the changes collection
-            listBox1.DataSource = changes;
-        }
-        private void create_Initial_Snapshot_Click(object sender, EventArgs e)
+      
+        private void Image_Registry_Click(object sender, EventArgs e)
         {
             //create the files and then pipe to them the data for the base snapshot.
             //I figure the file should be open to read/write data to/from it.
@@ -76,27 +77,25 @@ namespace Registry_Change_Display
                          // try starting two powershell consoles and reading the registry into them
 
                          //OpenOrCreate, ReadWrite
-                         await using (File.Open(HKCU_Current_FilePath, (FileMode)4, FileAccess.ReadWrite))
+                         await using (File.Open(HKCU_Today_FilePath, (FileMode)4, FileAccess.ReadWrite))
                          {
                              startProcess();
-                             process.StartInfo.Arguments += current_registry_HKCU_command;
+                             process.StartInfo.Arguments += HKCU_Today_Dump_Command;
                              process.Start();
                              process.Close();
                          };
 
                          //OpenOrCreate, ReadWrite
-                         await using (File.Open(HKLM_Current_FilePath, (FileMode)4, FileAccess.ReadWrite))
+                         await using (File.Open(HKLM_Today_FilePath, (FileMode)4, FileAccess.ReadWrite))
                          {
                              startProcess();
-                             process.StartInfo.Arguments += current_registry_HKLM_command;
+                             process.StartInfo.Arguments += HKLM_Today_Dump_Command;
                              process.Start();
                              process.Close();
                          };
                      }
                      catch (Exception)
                      {
-                         process.Close();
-                         process.Dispose();
                          throw;
                      }
                  });
@@ -129,8 +128,6 @@ namespace Registry_Change_Display
                     }
                     catch (Exception)
                     {
-                        process.Close();
-                        process.Dispose();
                         throw;
                     }
                 });
@@ -138,16 +135,16 @@ namespace Registry_Change_Display
         }
 
        
-        private void List_Changes_Click(object sender, EventArgs e)
+        private void Diff_File1_File2_Click(object sender, EventArgs e)
         {
             Task.Factory.StartNew(async () =>
             {
 
                 try
                 {
-                    string HKCUtext1 = await File.ReadAllTextAsync(HKCU_Current_FilePath);
+                    string HKCUtext1 = await File.ReadAllTextAsync(HKCU_Today_FilePath);
                     string HKCUtext2 = await File.ReadAllTextAsync(HKCU_Init_FilePath);
-                    string HKLMtext1 = await File.ReadAllTextAsync(HKLM_Current_FilePath);
+                    string HKLMtext1 = await File.ReadAllTextAsync(HKLM_Today_FilePath);
                     string HKLMtext2 = await File.ReadAllTextAsync(HKLM_Init_FilePath);
                     List<Diff> changes = new List<Diff>();
 
@@ -162,10 +159,8 @@ namespace Registry_Change_Display
                         convertedDiffs.Add(diff.text + " " + diff.operation.ToString());
                     }
 
-                    //using (File.Open(changes_FilePath, (FileMode)4, FileAccess.ReadWrite))
-                    //{
-                        File.WriteAllLines(changes_FilePath, convertedDiffs);
-                    //}
+                    diffCollection = convertedDiffs;
+                        File.WriteAllLines(changes_FilePath, convertedDiffs);                    
                 }
 
                 catch (Exception)
@@ -190,6 +185,70 @@ namespace Registry_Change_Display
 
             process.StartInfo.Arguments = null;
             return process;
+        }
+
+        private async void Save_File_Click(object sender, EventArgs e)
+        {
+            DialogResult saveresult = saveFileDialog1.ShowDialog();
+            if (saveresult == DialogResult.OK)
+            {
+                try
+                {
+                    string path = saveFileDialog1.FileName;
+                    StreamWriter sw = new StreamWriter(path);
+                    foreach (var item in diffCollection)
+                    {
+                       await sw.WriteLineAsync(item);
+                    }
+                    sw.Close();
+                }
+                catch (Exception)
+                {
+                    MessageBox.Show("There was an issue saving the file.");
+                }
+            }
+        }
+
+        private void Load_File1_Click(object sender, EventArgs e)
+        {
+            int size = -1;
+            OpenFileDialog openFileDialog1 = new OpenFileDialog();
+            DialogResult result = openFileDialog1.ShowDialog(); // Show the dialog.
+            if (result == DialogResult.OK) // Test result.
+            {
+                string file1 = openFileDialog1.FileName;
+                try
+                {
+                    File1_Path = file1;
+                }
+                catch (IOException)
+                {
+                    MessageBox.Show("error loading File 1");
+                }
+            }
+            Console.WriteLine(size); // <-- Shows file size in debugging mode.
+            Console.WriteLine(result); // <-- For debugging use.
+        }
+
+        private void Load_File2_Click(object sender, EventArgs e)
+        {
+            int size = -1;
+            OpenFileDialog openFileDialog2 = new OpenFileDialog();
+            DialogResult result = openFileDialog2.ShowDialog(); // Show the dialog.
+            if (result == DialogResult.OK) // Test result.
+            {
+                string file2 = openFileDialog2.FileName;
+                try
+                {
+                    File2_Path = file2;
+                }
+                catch (IOException)
+                {
+                    MessageBox.Show("error loading File 2");
+                }
+            }
+            Console.WriteLine(size); // <-- Shows file size in debugging mode.
+            Console.WriteLine(result); // <-- For debugging use.
         }
     }
 }
