@@ -7,15 +7,13 @@ namespace Registry_Change_Display
     public partial class Registry_Change_Recorder : Form
     {
 
-        SharedTypes _st;       
+        internal static SharedTypes _st { get; set; }
 
         public Registry_Change_Recorder()
         {
             InitializeComponent();
 
-            SharedTypes st = new SharedTypes();
-            _st = st;
-        
+            _st = new SharedTypes();
         }
 
 
@@ -123,8 +121,15 @@ namespace Registry_Change_Display
                 }
                 finally
                 {
-                    _st.changes = _st.File2_string_array.Except(_st.File1_string_array);
-
+                    if (_st.File2_string_array.Length > _st.File1_string_array.Length)
+                    {
+                        _st.changes = _st.File2_string_array.Except(_st.File1_string_array);
+                    }
+                    else
+                    {
+                        _st.changes = _st.File1_string_array.Except(_st.File2_string_array);
+                    }
+                  
 
                     //List<Diff> changes = new List<Diff>();
 
@@ -187,13 +192,17 @@ namespace Registry_Change_Display
                 try
                 {
                     string path = saveFileDialog1.FileName;
-                    File.WriteAllLines(path, _st.changes);
-                    StreamWriter sw = new StreamWriter(path);
-                    foreach (var item in _st.diffCollection)
+
+                    _st.changes_FilePath = path;
+
+                    if (_st.changes != null)
                     {
-                       await sw.WriteLineAsync(item);
+                        File.WriteAllLines(path, _st.changes);
                     }
-                    sw.Close();
+                    else
+                    {
+                        MessageBox.Show("No changes to save.");
+                    }
                 }
                 catch (Exception)
                 {

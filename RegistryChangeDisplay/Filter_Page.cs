@@ -1,26 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
+﻿using System.Data;
 
 namespace Registry_Change_Display
 {
     public partial class Filter_Page : Form
-    {
-        SharedTypes _st;
+    {        
 
         public Filter_Page()
         {
             InitializeComponent();
-
-            SharedTypes st = new SharedTypes();
-            _st = st;
-
+             
             resetListBox();            
         }
 
@@ -29,7 +17,7 @@ namespace Registry_Change_Display
             listBox1.Items.Clear();
 
             List<string> lines = new List<string>();
-            using (StreamReader r = new StreamReader(_st.changes_FilePath))
+            using (StreamReader r = new StreamReader(Registry_Change_Recorder._st.changes_FilePath))
             {
                 string line;
                 while ((line = r.ReadLine()) != null)
@@ -54,7 +42,7 @@ namespace Registry_Change_Display
 
             _filtered_lines = new List<string>();
 
-            _filtered_lines = File.ReadAllLines(_st.changes_FilePath).Where(n => n.Contains(filter)).Select(m => m).ToList();
+            _filtered_lines = File.ReadAllLines(Registry_Change_Recorder._st.changes_FilePath).Where(n => n.Contains(filter)).Select(m => m).ToList();
 
             listBox1.Items.Clear();
             foreach (var item in _filtered_lines)
@@ -77,12 +65,12 @@ namespace Registry_Change_Display
                 }
                 else
                 {
-                    _filtered_lines = File.ReadAllLines(_st.changes_FilePath).Where(n => n.Contains(search)).Select(m => m).ToList();
+                    _filtered_lines = File.ReadAllLines(Registry_Change_Recorder._st.changes_FilePath).Where(n => n.Contains(search)).Select(m => m).ToList();
                 }
             }
             catch (Exception)
             {
-                _filtered_lines = File.ReadAllLines(_st.changes_FilePath).ToList();
+                _filtered_lines = File.ReadAllLines(Registry_Change_Recorder._st.changes_FilePath).ToList();
                 MessageBox.Show("end of file reached.");
             }
         }

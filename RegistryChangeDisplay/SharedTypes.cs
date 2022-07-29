@@ -36,7 +36,7 @@ namespace Registry_Change_Display
 
 
         // changes is the diff between loaded and base
-        internal string changes_FilePath { get; }
+        internal string changes_FilePath { get; set; }
 
         internal IEnumerable<string> changes { get; set; }
 
@@ -63,9 +63,6 @@ namespace Registry_Change_Display
 
             HKLM_Today_Dump_Command = string.Format(@"dir -rec -erroraction ignore HKLM:\ | % name >  {0}\Current-HKLM-{1}.txt", Path.GetDirectoryName(Application.ExecutablePath), DateTime.Now.ToString("ddMMyyyy", CultureInfo.InvariantCulture));
 
-
-
-            changes_FilePath = string.Format(@"{0}\changes.txt", Path.GetDirectoryName(Application.ExecutablePath));
         }
     }
 }
