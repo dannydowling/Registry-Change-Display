@@ -71,6 +71,7 @@
             this.button3.TabIndex = 2;
             this.button3.Text = "Filter Results";
             this.button3.UseVisualStyleBackColor = true;
+            this.button3.Click += new System.EventHandler(this.Filter_Button_Click);
             // 
             // saveFileDialog1
             // 
