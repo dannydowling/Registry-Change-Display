@@ -63,4 +63,7 @@
   <metadata name="registryChangeRecorderBindingSource.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>153, 17</value>
   </metadata>
+  <data name="richTextBox1.Text" xml:space="preserve">
+    <value>The first time Image Registry is clicked it creates a base image of HKCU and HKLM.  The next times it creates files with the date appended. You could either click Diff File1 and File2 to compare today with the base image or load 2 files and then click Diff File1 and File2. You need to save the diff file before clicking filter results. It's working badly but will get better.</value>
+  </data>
 </root>
