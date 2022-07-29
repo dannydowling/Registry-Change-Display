@@ -12,26 +12,37 @@ namespace Registry_Change_Display
 {
     public partial class Filter_Page : Form
     {
-        readonly SharedTypes _st;
+        SharedTypes _st;
 
         public Filter_Page()
         {
             InitializeComponent();
 
-            try
+            SharedTypes st = new SharedTypes();
+            _st = st;
+
+            resetListBox();            
+        }
+
+        private void resetListBox()
+        {
+            listBox1.Items.Clear();
+
+            List<string> lines = new List<string>();
+            using (StreamReader r = new StreamReader(_st.changes_FilePath))
             {
-                listBox1.DataSource = File.ReadAllLines(_st.changes_FilePath);
+                string line;
+                while ((line = r.ReadLine()) != null)
+                {
+                    listBox1.Items.Add(line);
+
+                }
             }
-            catch (IOException)
-            {
-                MessageBox.Show("operation failed");
-            }
-            
         }
 
         private void listBox1_SelectedIndexChanged(object sender, EventArgs e)
         {
-
+            textBox1.Text = listBox1.SelectedIndex.ToString();
         }
 
         List<string> _filtered_lines;
@@ -45,7 +56,11 @@ namespace Registry_Change_Display
 
             _filtered_lines = File.ReadAllLines(_st.changes_FilePath).Where(n => n.Contains(filter)).Select(m => m).ToList();
 
-            listBox1.DataSource = _filtered_lines;
+            listBox1.Items.Clear();
+            foreach (var item in _filtered_lines)
+            {
+                listBox1.Items.Add(item);
+            }            
         }
 
         private void Search_Button_Click(object sender, EventArgs e)
