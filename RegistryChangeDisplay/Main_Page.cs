@@ -1,3 +1,4 @@
+using DiffLib;
 using System.Diagnostics;
 using System.Globalization;
 
@@ -121,47 +122,17 @@ namespace Registry_Change_Display
                 }
                 finally
                 {
-                    if (_st.File2_string_array.Length > _st.File1_string_array.Length)
+
+                    if (_st.File2_string_array != null && _st.File1_string_array != null)
                     {
-                        _st.changes = _st.File2_string_array.Except(_st.File1_string_array);
-                    }
-                    else
-                    {
-                        _st.changes = _st.File1_string_array.Except(_st.File2_string_array);
-                    }
-                  
+                        var diffedSections = Diff.CalculateSections(_st.File1_string_array, _st.File2_string_array);
+                        var changedRegistryValues = Diff.AlignElements(_st.File1_string_array, _st.File2_string_array, diffedSections, new StringSimilarityDiffElementAligner());
 
-                    //List<Diff> changes = new List<Diff>();
-
-                    //diff_match_patch dmp = new diff_match_patch();
-
-
-                    //for (int i = 0; i < File2_string_array.Length; --i)
-                    //{
-                    //   var diff = dmp.diff_main(File1_string_array[i], File2_string_array[i]) ;
-                    //    foreach (var item in diff)
-                    //    {
-                    //        if (item.operation != Operation.EQUAL)
-                    //        {
-                    //            changes.Add(item);
-                    //            File3_string_array.Append(File2_string_array[i]);
-                                
-                    
-                    // I couldn't find a way to remove the compared line from the array.
-
-
-                    //        }
-                    //    }
-                    //}
-                    //List<string> convertedDiffs = new List<string>();
-                    //foreach (var diff in changes)
-                    //{
-                    //    //inserted, deleted...
-                    //    convertedDiffs.Add(diff.text + " " + diff.operation.ToString());
-                    //}
-
-                    //diffCollection = convertedDiffs;
-                    
+                        foreach (var item in changedRegistryValues)
+                        {
+                            _st.changes.Append(item.ToString());
+                        }
+                    }                    
                 }
             });
         }
@@ -183,7 +154,7 @@ namespace Registry_Change_Display
             return _st.process;
         }
 
-        private async void Save_File_Click(object sender, EventArgs e)
+        private void Save_File_Click(object sender, EventArgs e)
         {
             DialogResult saveresult = saveFileDialog1.ShowDialog();
             saveFileDialog1.InitialDirectory = Path.GetDirectoryName(Application.ExecutablePath);

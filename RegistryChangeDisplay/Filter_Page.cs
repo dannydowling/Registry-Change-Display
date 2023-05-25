@@ -1,4 +1,5 @@
 ﻿using System.Data;
+using DiffLib;
 
 namespace Registry_Change_Display
 {
@@ -14,16 +15,18 @@ namespace Registry_Change_Display
 
         private void resetListBox()
         {
-            listBox1.Items.Clear();
-
+          
             List<string> lines = new List<string>();
-            using (StreamReader r = new StreamReader(Registry_Change_Recorder._st.changes_FilePath))
+            if (Registry_Change_Recorder._st.changes_FilePath != null)
             {
-                string line;
-                while ((line = r.ReadLine()) != null)
+                using (StreamReader r = new StreamReader(Registry_Change_Recorder._st.changes_FilePath))
                 {
-                    listBox1.Items.Add(line);
+                    string? line;
+                    while ((line = r.ReadLine()) != null)
+                    {
+                        listBox1.Items.Add(line);
 
+                    }
                 }
             }
         }
@@ -34,22 +37,36 @@ namespace Registry_Change_Display
         }
 
         List<string> _filtered_lines;
-
+               
         private void Filter_Button_Click(object sender, EventArgs e)
         {
-            string filter = textBox1.Text;
             listBox1.Items.Clear();
 
-            _filtered_lines = new List<string>();
-
-            _filtered_lines = File.ReadAllLines(Registry_Change_Recorder._st.changes_FilePath).Where(n => n.Contains(filter)).Select(m => m).ToList();
-
-            listBox1.Items.Clear();
-            foreach (var item in _filtered_lines)
+            if (!string.IsNullOrEmpty(Registry_Change_Recorder._st.changes_FilePath))
             {
-                listBox1.Items.Add(item);
-            }            
+                Diff.CalculateSections(File.ReadAllLines(Registry_Change_Recorder._st.changes_FilePath), File.ReadAllLines(Registry_Change_Recorder._st.changes_FilePath));
+            }
+
+
+
+
+
+
+
+
+
+
+
+            //    if (!string.IsNullOrEmpty(Registry_Change_Recorder._st.changes_FilePath))
+            //{
+            //    _filtered_lines = File.ReadAllLines(Registry_Change_Recorder._st.changes_FilePath).Where(n => n.Contains(filter)).Select(m => m).ToList();
+            //}
+            //if (_filtered_lines != null)
+            //{
+            //    listBox1.Items.AddRange(_filtered_lines.ToArray());
+            //}
         }
+
 
         private void Search_Button_Click(object sender, EventArgs e)
         {
